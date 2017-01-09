@@ -7,7 +7,7 @@
     <version>1.1</version>
     <packaging>jar</packaging>
 
-    <name>Senjitang CommonUtil</name>
+    <name>sjt:CommonUtil</name>
     <url>http://maven.apache.org</url>
 
     <properties>
