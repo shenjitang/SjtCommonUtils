@@ -25,6 +25,9 @@ public class StringUtilEx {
 
     private static String[] source = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 	private static Map<String, Pattern> map = new ConcurrentHashMap<String, Pattern>();
+    public static String REGEX_EMAIL = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
+    public static String IS_REGEX_MOBILE = "^1\\d{10}$";
+    public static String IS_REGEX_EMAIL = "^[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?$";
 
     public static String trim(String input) {
         if (StringUtils.isNotEmpty(input)) {
@@ -336,4 +339,11 @@ public class StringUtilEx {
 		return !canEncode(str);
 	}
 
+    public static boolean isMobile(String name) {
+        return Pattern.matches(IS_REGEX_MOBILE, name);
+    }
+
+    public static boolean isEmail(String name) {
+        return Pattern.matches(IS_REGEX_EMAIL, name);
+    }
 }

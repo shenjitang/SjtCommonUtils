@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.shenjitang.common;
+package org.shenjitang.common.util;
 
 /**
  *

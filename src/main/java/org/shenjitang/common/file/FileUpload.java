@@ -1,7 +1,7 @@
 package org.shenjitang.common.file;
 
 import org.shenjitang.common.Destroynable;
-import org.shenjitang.common.StringUtilEx;
+import org.shenjitang.common.util.StringUtilEx;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
