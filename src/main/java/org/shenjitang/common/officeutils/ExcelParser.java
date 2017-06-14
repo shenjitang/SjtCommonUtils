@@ -78,7 +78,7 @@ public class ExcelParser {
                 }
             }
         } else {
-            return pParseExcel(excelFile, pages);
+            return parseExcelInMem(excelFile, pages);
         }
     }
 
@@ -94,8 +94,8 @@ public class ExcelParser {
 		String[] pages = getAllSheetName(excelFile);
 		return parseExcel(excelFile,pages,classLibDir);
 	}
-
-    private static Map<String, String[][]> pParseExcel(File excelFile, String[] pages) throws Exception {
+    
+    public static Map<String, String[][]> parseExcelInMem(File excelFile, String[] pages) throws Exception {
         String extension = FilenameUtils.getExtension(excelFile.getPath());
         if ("xlsx".equalsIgnoreCase(extension)) { // 2007
            return parse2007(excelFile, pages);
@@ -750,8 +750,38 @@ public class ExcelParser {
 	}
 
     public static void main(String[] args) throws Exception {
-        File file = new File("E:/API模板.xlsx");
-        //parseExcel(file,new String[]{"API1","API2"});
+        if (args.length < 2) {
+            System.err.println("Usage: com.richeninfo.officeutils.ExcelParser [fileName]");
+            //args = new String[] {"d:\\temp\\abc.xls", "d:\\temp\\abc.bin"};
+        }
+        try {
+            File file = new File(args[0]);
+            if (!file.exists()) {
+                System.err.println("file:" + file + " not exist!");
+                System.exit(-1);
+            }
+            File outFile = new File(args[1]);
+            String[] pages = null; 
+            if (args.length > 2) {
+                pages = new String[args.length - 2];
+                for (int i = 2; i < args.length; i++) {
+                    pages[i - 2] = args[i];
+                }
+            }
+            Map<String, String[][]> map = parseExcelInMem(file, pages);
+            ObjectOutputStream objOutputStream = new ObjectOutputStream(new FileOutputStream(outFile));
+            try {
+                objOutputStream.writeObject(map);
+                objOutputStream.flush();
+            } finally {
+                objOutputStream.close();
+            }
+            print(map);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            System.exit(-2);
+        }
+        System.exit(0);
 
     }
 
