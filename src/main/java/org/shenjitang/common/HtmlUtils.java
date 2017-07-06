@@ -5,6 +5,8 @@
 
 package org.shenjitang.common;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -47,6 +49,9 @@ public class HtmlUtils {
     }
 
     public static String getTextFromHtml(String htmlStr) {
+        if(StringUtils.isBlank(htmlStr)){
+            return "";
+        }
         htmlStr = delHTMLTag(htmlStr);
         htmlStr = htmlStr.replaceAll(" ", "");
         htmlStr = htmlStr.replaceAll("　", "");
