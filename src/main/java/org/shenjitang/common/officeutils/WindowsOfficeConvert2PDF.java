@@ -8,6 +8,8 @@ import com.jacob.com.Variant;
 import java.io.File;
 
 /**
+ * OFFICE 转 PDF 支持 WORD EXCEL PPT
+ *
  * 使用要求
  * 1.该功能目前只支持windows系统,jacob需要调用Windows的com对象来转换
  * 2.安装OFFICE 支持03以上版本
