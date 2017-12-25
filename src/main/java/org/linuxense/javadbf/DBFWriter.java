@@ -19,336 +19,324 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 
 /**
-	An object of this class can create a DBF file.
-
-	Create an object, <br>
-	then define fields by creating DBFField objects and<br>
-	add them to the DBFWriter object<br>
-	add records using the addRecord() method and then<br>
-	call write() method.
-*/
+ * An object of this class can create a DBF file.
+ * <p>
+ * Create an object, <br>
+ * then define fields by creating DBFField objects and<br>
+ * add them to the DBFWriter object<br>
+ * add records using the addRecord() method and then<br>
+ * call write() method.
+ */
 public class DBFWriter extends DBFBase {
 
-	/* other class variables */
-	DBFHeader header;
-	Vector v_records = new Vector();
-	int recordCount = 0;
-	RandomAccessFile raf = null; /* Open and append records to an existing DBF */
-	boolean appendMode = false;
+    /* other class variables */
+    DBFHeader header;
+    Vector v_records = new Vector();
+    int recordCount = 0;
+    RandomAccessFile raf = null; /* Open and append records to an existing DBF */
+    boolean appendMode = false;
 
-	/**
-		Creates an empty Object.
-	*/
-	public DBFWriter() {
+    /**
+     * Creates an empty Object.
+     */
+    public DBFWriter() {
 
-		this.header = new DBFHeader();
-	}
+        this.header = new DBFHeader();
+    }
 
-	/**
-	 	Creates a DBFWriter which can append to records to an existing DBF file.
-		@param dbfFile. The file passed in shouls be a valid DBF file.
-		@exception Throws DBFException if the passed in file does exist but not a valid DBF file, or if an IO error occurs.
-	 */
-	public DBFWriter( File dbfFile) 
-	throws DBFException {
+    /**
+     * Creates a DBFWriter which can append to records to an existing DBF file.
+     *
+     * @param dbfFile. The file passed in shouls be a valid DBF file.
+     * @throws Throws DBFException if the passed in file does exist but not a valid DBF file, or if an IO error occurs.
+     */
+    public DBFWriter(File dbfFile)
+            throws DBFException {
 
-		try {
+        try {
 
-			this.raf = new RandomAccessFile( dbfFile, "rw");
+            this.raf = new RandomAccessFile(dbfFile, "rw");
 
 			/* before proceeding check whether the passed in File object 
 			 is an empty/non-existent file or not.
 			 */
-			if( !dbfFile.exists() || dbfFile.length() == 0) {
+            if (!dbfFile.exists() || dbfFile.length() == 0) {
 
-				this.header = new DBFHeader();
-				return;
-			}
+                this.header = new DBFHeader();
+                return;
+            }
 
-			header = new DBFHeader();
-			this.header.read( raf);
+            header = new DBFHeader();
+            this.header.read(raf);
 
-			/* position file pointer at the end of the raf */
-			this.raf.seek( this.raf.length()-1 /* to ignore the END_OF_DATA byte at EoF */);
-		}
-		catch( FileNotFoundException e) {
+            /* position file pointer at the end of the raf */
+            this.raf.seek(this.raf.length() - 1 /* to ignore the END_OF_DATA byte at EoF */);
+        } catch (FileNotFoundException e) {
 
-			throw new DBFException( "Specified file is not found. " + e.getMessage());
-		}
-		catch( IOException e) {
+            throw new DBFException("Specified file is not found. " + e.getMessage());
+        } catch (IOException e) {
 
-			throw new DBFException( e.getMessage() + " while reading header");
-		}
+            throw new DBFException(e.getMessage() + " while reading header");
+        }
 
-		this.recordCount = this.header.numberOfRecords;
-	}
+        this.recordCount = this.header.numberOfRecords;
+    }
 
-	/**
-		Sets fields.
-	*/
-	public void setFields( DBFField[] fields)
-	throws DBFException {
+    /**
+     * Sets fields.
+     */
+    public void setFields(DBFField[] fields)
+            throws DBFException {
 
-		if( this.header.fieldArray != null) {
+        if (this.header.fieldArray != null) {
 
-			throw new DBFException( "Fields has already been set");
-		}
+            throw new DBFException("Fields has already been set");
+        }
 
-		if( fields == null || fields.length == 0) {
+        if (fields == null || fields.length == 0) {
 
-			throw new DBFException( "Should have at least one field");
-		}
+            throw new DBFException("Should have at least one field");
+        }
 
-		for( int i=0; i<fields.length; i++) {
+        for (int i = 0; i < fields.length; i++) {
 
-			if( fields[i] == null) {
+            if (fields[i] == null) {
 
-				throw new DBFException( "Field " + (i+1) + " is null");
-			}
-		}
+                throw new DBFException("Field " + (i + 1) + " is null");
+            }
+        }
 
-		this.header.fieldArray = fields;
+        this.header.fieldArray = fields;
 
-		try {
+        try {
 
-			if( this.raf != null && this.raf.length() == 0) {
+            if (this.raf != null && this.raf.length() == 0) {
 
 				/* 
 			  	this is a new/non-existent file. So write header before proceeding
 		 		*/
-				this.header.write( this.raf);
-			}
-		}
-		catch( IOException e) {
+                this.header.write(this.raf);
+            }
+        } catch (IOException e) {
 
-			throw new DBFException( "Error accesing file");
-		}
-	}
+            throw new DBFException("Error accesing file");
+        }
+    }
 
-	/**
-		Add a record.
-	*/
-	public void addRecord( Object[] values)
-	throws DBFException {
+    /**
+     * Add a record.
+     */
+    public void addRecord(Object[] values)
+            throws DBFException {
 
-		if( this.header.fieldArray == null) {
+        if (this.header.fieldArray == null) {
 
-			throw new DBFException( "Fields should be set before adding records");
-		}
+            throw new DBFException("Fields should be set before adding records");
+        }
 
-		if( values == null) {
+        if (values == null) {
 
-			throw new DBFException( "Null cannot be added as row");
-		}
+            throw new DBFException("Null cannot be added as row");
+        }
 
-		if( values.length != this.header.fieldArray.length) {
+        if (values.length != this.header.fieldArray.length) {
 
-			throw new DBFException( "Invalid record. Invalid number of fields in row");
-		}
+            throw new DBFException("Invalid record. Invalid number of fields in row");
+        }
 
-		for( int i=0; i<this.header.fieldArray.length; i++) {
+        for (int i = 0; i < this.header.fieldArray.length; i++) {
 
-			if( values[i] == null) {
+            if (values[i] == null) {
 
-				continue;
-			}
+                continue;
+            }
 
-			switch( this.header.fieldArray[i].getDataType()) {
+            switch (this.header.fieldArray[i].getDataType()) {
 
-				case 'C':
-					if( !(values[i] instanceof String)) {
-						throw new DBFException( "Invalid value for field " + i);
-					}
-					break;
+                case 'C':
+                    if (!(values[i] instanceof String)) {
+                        throw new DBFException("Invalid value for field " + i);
+                    }
+                    break;
 
-				case 'L':
-					if( !( values[i] instanceof Boolean)) {
-					  throw new DBFException( "Invalid value for field " + i);
-					}
-					break;
+                case 'L':
+                    if (!(values[i] instanceof Boolean)) {
+                        throw new DBFException("Invalid value for field " + i);
+                    }
+                    break;
 
-				case 'N':
-					if( !( values[i] instanceof Double)) {
-						throw new DBFException( "Invalid value for field " + i);
-					}
-					break;
+                case 'N':
+                    if (!(values[i] instanceof Double)) {
+                        throw new DBFException("Invalid value for field " + i);
+                    }
+                    break;
 
-				case 'D':
-					if( !( values[i] instanceof Date)) {
-						throw new DBFException( "Invalid value for field " + i);
-					}
-					break;
+                case 'D':
+                    if (!(values[i] instanceof Date)) {
+                        throw new DBFException("Invalid value for field " + i);
+                    }
+                    break;
 
-				case 'F':
-					if( !(values[i] instanceof Double)) {
+                case 'F':
+                    if (!(values[i] instanceof Double)) {
 
-						throw new DBFException( "Invalid value for field " + i);
-					}
-					break;
-			}
-		}
+                        throw new DBFException("Invalid value for field " + i);
+                    }
+                    break;
+            }
+        }
 
-		if( this.raf == null) {
+        if (this.raf == null) {
 
-			v_records.addElement( values);
-		}
-		else {
+            v_records.addElement(values);
+        } else {
 
-			try {
-			
-				writeRecord( this.raf, values);
-				this.recordCount++;
-			}
-			catch( IOException e) {
+            try {
 
-				throw new DBFException( "Error occured while writing record. " + e.getMessage());
-			}
-		}
-	}
+                writeRecord(this.raf, values);
+                this.recordCount++;
+            } catch (IOException e) {
 
-	/**
-		Writes the set data to the OutputStream.
-	*/
-	public void write( OutputStream out)
-	throws DBFException {
+                throw new DBFException("Error occured while writing record. " + e.getMessage());
+            }
+        }
+    }
 
-		try {
+    /**
+     * Writes the set data to the OutputStream.
+     */
+    public void write(OutputStream out)
+            throws DBFException {
 
-			if( this.raf == null) {
+        try {
 
-				DataOutputStream outStream = new DataOutputStream( out);
+            if (this.raf == null) {
 
-				this.header.numberOfRecords = v_records.size();
-				this.header.write( outStream);
+                DataOutputStream outStream = new DataOutputStream(out);
 
-				/* Now write all the records */
-				int t_recCount = v_records.size();
-				for( int i=0; i<t_recCount; i++) { /* iterate through records */
+                this.header.numberOfRecords = v_records.size();
+                this.header.write(outStream);
 
-					Object[] t_values = (Object[])v_records.elementAt( i);
+                /* Now write all the records */
+                int t_recCount = v_records.size();
+                for (int i = 0; i < t_recCount; i++) { /* iterate through records */
 
-					writeRecord( outStream, t_values);
-				}
+                    Object[] t_values = (Object[]) v_records.elementAt(i);
 
-				outStream.write( END_OF_DATA);
-				outStream.flush();
-			}
-			else {
+                    writeRecord(outStream, t_values);
+                }
 
-				/* everything is written already. just update the header for record count and the END_OF_DATA mark */
-				this.header.numberOfRecords = this.recordCount;
-				this.raf.seek( 0);
-				this.header.write( this.raf);
-				this.raf.seek( raf.length());
-				this.raf.writeByte( END_OF_DATA);
-				this.raf.close();
-			}
+                outStream.write(END_OF_DATA);
+                outStream.flush();
+            } else {
 
-		}
-		catch( IOException e) {
+                /* everything is written already. just update the header for record count and the END_OF_DATA mark */
+                this.header.numberOfRecords = this.recordCount;
+                this.raf.seek(0);
+                this.header.write(this.raf);
+                this.raf.seek(raf.length());
+                this.raf.writeByte(END_OF_DATA);
+                this.raf.close();
+            }
 
-			throw new DBFException( e.getMessage());
-		}
-	}
+        } catch (IOException e) {
 
-	public void write()
-	throws DBFException {
+            throw new DBFException(e.getMessage());
+        }
+    }
 
-		this.write( null);
-	}
+    public void write()
+            throws DBFException {
 
-	private void writeRecord( DataOutput dataOutput, Object []objectArray) 
-	throws IOException {
+        this.write(null);
+    }
 
-		dataOutput.write( (byte)' ');
-		for( int j=0; j<this.header.fieldArray.length; j++) { /* iterate throught fields */
+    private void writeRecord(DataOutput dataOutput, Object[] objectArray)
+            throws IOException {
 
-			switch( this.header.fieldArray[j].getDataType()) {
+        dataOutput.write((byte) ' ');
+        for (int j = 0; j < this.header.fieldArray.length; j++) { /* iterate throught fields */
 
-				case 'C':
-					if( objectArray[j] != null) {
+            switch (this.header.fieldArray[j].getDataType()) {
 
-						String str_value = objectArray[j].toString();	
-						dataOutput.write( Utils.textPadding( str_value, characterSetName, this.header.fieldArray[j].getFieldLength()));
-					}
-					else {
+                case 'C':
+                    if (objectArray[j] != null) {
 
-						dataOutput.write( Utils.textPadding( "", this.characterSetName, this.header.fieldArray[j].getFieldLength()));
-					}
+                        String str_value = objectArray[j].toString();
+                        dataOutput.write(Utils.textPadding(str_value, characterSetName, this.header.fieldArray[j].getFieldLength()));
+                    } else {
 
-					break;
+                        dataOutput.write(Utils.textPadding("", this.characterSetName, this.header.fieldArray[j].getFieldLength()));
+                    }
 
-				case 'D':
-					if( objectArray[j] != null) {
+                    break;
 
-						GregorianCalendar calendar = new GregorianCalendar();
-						calendar.setTime( (Date)objectArray[j]);
-						StringBuffer t_sb = new StringBuffer();
-						dataOutput.write( String.valueOf( calendar.get( Calendar.YEAR)).getBytes());
-						dataOutput.write( Utils.textPadding( String.valueOf( calendar.get( Calendar.MONTH)+1), this.characterSetName, 2, Utils.ALIGN_RIGHT, (byte)'0'));
-						dataOutput.write( Utils.textPadding( String.valueOf( calendar.get( Calendar.DAY_OF_MONTH)), this.characterSetName, 2, Utils.ALIGN_RIGHT, (byte)'0'));
-					}
-					else {
+                case 'D':
+                    if (objectArray[j] != null) {
 
-						dataOutput.write( "        ".getBytes());
-					}
+                        GregorianCalendar calendar = new GregorianCalendar();
+                        calendar.setTime((Date) objectArray[j]);
+                        StringBuffer t_sb = new StringBuffer();
+                        dataOutput.write(String.valueOf(calendar.get(Calendar.YEAR)).getBytes());
+                        dataOutput.write(Utils.textPadding(String.valueOf(calendar.get(Calendar.MONTH) + 1), this.characterSetName, 2, Utils.ALIGN_RIGHT, (byte) '0'));
+                        dataOutput.write(Utils.textPadding(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)), this.characterSetName, 2, Utils.ALIGN_RIGHT, (byte) '0'));
+                    } else {
 
-					break;
+                        dataOutput.write("        ".getBytes());
+                    }
 
-				case 'F':
+                    break;
 
-					if( objectArray[j] != null) {
+                case 'F':
 
-						dataOutput.write( Utils.doubleFormating( (Double)objectArray[j], this.characterSetName, this.header.fieldArray[j].getFieldLength(), this.header.fieldArray[j].getDecimalCount()));
-					}
-					else {
+                    if (objectArray[j] != null) {
 
-						dataOutput.write( Utils.textPadding( "?", this.characterSetName, this.header.fieldArray[j].getFieldLength(), Utils.ALIGN_RIGHT));
-					}
+                        dataOutput.write(Utils.doubleFormating((Double) objectArray[j], this.characterSetName, this.header.fieldArray[j].getFieldLength(), this.header.fieldArray[j].getDecimalCount()));
+                    } else {
 
-					break;
+                        dataOutput.write(Utils.textPadding("?", this.characterSetName, this.header.fieldArray[j].getFieldLength(), Utils.ALIGN_RIGHT));
+                    }
 
-				case 'N':
+                    break;
 
-					if( objectArray[j] != null) {
+                case 'N':
 
-						dataOutput.write(
-							Utils.doubleFormating( (Double)objectArray[j], this.characterSetName, this.header.fieldArray[j].getFieldLength(), this.header.fieldArray[j].getDecimalCount()));
-					}
-					else {
+                    if (objectArray[j] != null) {
 
-						dataOutput.write( 
-							Utils.textPadding( "?", this.characterSetName, this.header.fieldArray[j].getFieldLength(), Utils.ALIGN_RIGHT));
-					}
+                        dataOutput.write(
+                                Utils.doubleFormating((Double) objectArray[j], this.characterSetName, this.header.fieldArray[j].getFieldLength(), this.header.fieldArray[j].getDecimalCount()));
+                    } else {
 
-					break;
-				case 'L':
+                        dataOutput.write(
+                                Utils.textPadding("?", this.characterSetName, this.header.fieldArray[j].getFieldLength(), Utils.ALIGN_RIGHT));
+                    }
 
-					if( objectArray[j] != null) {
+                    break;
+                case 'L':
 
-						if( (Boolean)objectArray[j] == Boolean.TRUE) {
+                    if (objectArray[j] != null) {
 
-							dataOutput.write( (byte)'T');
-						}
-						else {
+                        if ((Boolean) objectArray[j] == Boolean.TRUE) {
 
-							dataOutput.write((byte)'F');
-						}
-					}
-					else {
+                            dataOutput.write((byte) 'T');
+                        } else {
 
-						dataOutput.write( (byte)'?');
-					}
+                            dataOutput.write((byte) 'F');
+                        }
+                    } else {
 
-					break;
+                        dataOutput.write((byte) '?');
+                    }
 
-				case 'M':
+                    break;
 
-					break;
+                case 'M':
 
-				default:	
-					throw new DBFException( "Unknown field type " + this.header.fieldArray[j].getDataType());
-			}
-		}	/* iterating through the fields */
-	}
+                    break;
+
+                default:
+                    throw new DBFException("Unknown field type " + this.header.fieldArray[j].getDataType());
+            }
+        }    /* iterating through the fields */
+    }
 }

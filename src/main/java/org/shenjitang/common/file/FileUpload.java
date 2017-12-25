@@ -1,7 +1,5 @@
 package org.shenjitang.common.file;
 
-import org.shenjitang.common.Destroynable;
-import org.shenjitang.common.util.StringUtilEx;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -9,6 +7,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.shenjitang.common.Destroynable;
+import org.shenjitang.common.util.StringUtilEx;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -20,7 +20,7 @@ import java.util.*;
  * Time: 下午3:11
  */
 
-public class FileUpload  implements Destroynable {
+public class FileUpload implements Destroynable {
     private Map<String, String> params = new HashMap<String, String>();
 
     private List<File> files = new ArrayList<File>();
@@ -32,13 +32,12 @@ public class FileUpload  implements Destroynable {
     private static DiskFileItemFactory factory = new DiskFileItemFactory();
 
     /**
-     *
      * @param request
      * @param tempDirPath
-     * @param fileName 文件名称可以为NULL，如果是NULL则用文件原有名称,不要带后缀名
+     * @param fileName    文件名称可以为NULL，如果是NULL则用文件原有名称,不要带后缀名
      * @return
      */
-    public static FileUpload parse(HttpServletRequest request,String tempDirPath,String fileName) {
+    public static FileUpload parse(HttpServletRequest request, String tempDirPath, String fileName) {
         ServletFileUpload upload = new ServletFileUpload(factory);
         FileUpload result = new FileUpload();
         Enumeration<String> keys = request.getParameterNames();
@@ -64,8 +63,8 @@ public class FileUpload  implements Destroynable {
                     continue;
                 }
                 String filename = item.getName();
-                if (StringUtils.isNotBlank(fileName)){
-                    filename = fileName + filename.substring(filename.lastIndexOf("."),filename.length());
+                if (StringUtils.isNotBlank(fileName)) {
+                    filename = fileName + filename.substring(filename.lastIndexOf("."), filename.length());
                 }
                 File tempDir = getTempDir(tempDirPath);
                 File tempFile = result.getTempFile(tempDir, filename);
@@ -75,19 +74,19 @@ public class FileUpload  implements Destroynable {
             String url = null;
             try {
                 url = request.getRequestURL().toString();
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             logger.error("上载文件异常 url = " + url, e);
         }
         return result;
     }
 
     /**
-     *
      * @param request
      * @param tempDirPath
      * @return
      */
-    public static FileUpload parse(HttpServletRequest request,String tempDirPath) {
+    public static FileUpload parse(HttpServletRequest request, String tempDirPath) {
         ServletFileUpload upload = new ServletFileUpload(factory);
         FileUpload result = new FileUpload();
         Enumeration<String> keys = request.getParameterNames();
@@ -121,7 +120,8 @@ public class FileUpload  implements Destroynable {
             String url = null;
             try {
                 url = request.getRequestURL().toString();
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             logger.error("上载文件异常 url = " + url, e);
         }
         return result;

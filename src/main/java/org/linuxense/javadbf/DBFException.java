@@ -15,13 +15,11 @@ import java.io.IOException;
 
 public class DBFException extends IOException {
 
-	public DBFException() {
+    public DBFException() {
+        super();
+    }
 
-		super();
-	}
-
-	public DBFException( String msg) {
-
-		super( msg);
-	}
+    public DBFException(String msg) {
+        super(msg);
+    }
 }
