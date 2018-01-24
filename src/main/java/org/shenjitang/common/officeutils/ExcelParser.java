@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 /**
  *
@@ -187,6 +188,25 @@ public class ExcelParser {
                         sheetMatrix[j] = new String[0];
                     }
                 }
+                //处理合并单元格，复制内容
+                int mergedRangeSize = sheet.getNumMergedRegions();
+                CellRangeAddress[] mergedRanges = new CellRangeAddress[mergedRangeSize];
+                for (int k = 0; k < mergedRangeSize; k++) {
+                    mergedRanges[k] = sheet.getMergedRegion(k);
+                    int firstRow = mergedRanges[k].getFirstRow();
+                    int lastRow = mergedRanges[k].getLastRow();
+                    int firstCol = mergedRanges[k].getFirstColumn();
+                    int lastCol = mergedRanges[k].getLastColumn();
+                    String value = sheetMatrix[firstRow][firstCol];
+                    for (int r = firstRow; r <= lastRow; r++) {
+                        for (int c = firstCol; c <= lastCol; c++) {
+                            if (r == firstRow && c == firstCol) {
+                            } else {
+                                sheetMatrix[r][c] = value;
+                            }
+                        }
+                    }
+                }
                 map.put(sheet.getSheetName(), sheetMatrix);
             }
         } finally {
@@ -234,6 +254,25 @@ public class ExcelParser {
                         sheetMatrix[j] = rowArray;
                     } else {
                         sheetMatrix[j] = new String[0];
+                    }
+                }
+                //处理合并单元格，复制内容
+                int mergedRangeSize = sheet.getNumMergedRegions();
+                CellRangeAddress[] mergedRanges = new CellRangeAddress[mergedRangeSize];
+                for (int k = 0; k < mergedRangeSize; k++) {
+                    mergedRanges[k] = sheet.getMergedRegion(k);
+                    int firstRow = mergedRanges[k].getFirstRow();
+                    int lastRow = mergedRanges[k].getLastRow();
+                    int firstCol = mergedRanges[k].getFirstColumn();
+                    int lastCol = mergedRanges[k].getLastColumn();
+                    String value = sheetMatrix[firstRow][firstCol];
+                    for (int r = firstRow; r <= lastRow; r++) {
+                        for (int c = firstCol; c <= lastCol; c++) {
+                            if (r == firstRow && c == firstCol) {
+                            } else {
+                                sheetMatrix[r][c] = value;
+                            }
+                        }
                     }
                 }
                 map.put(sheet.getSheetName(), sheetMatrix);
