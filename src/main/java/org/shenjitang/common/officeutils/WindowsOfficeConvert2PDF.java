@@ -9,20 +9,19 @@ import java.io.File;
 
 /**
  * OFFICE 转 PDF 支持 WORD EXCEL PPT
- *
+ * <p>
  * 使用要求
  * 1.该功能目前只支持windows系统,jacob需要调用Windows的com对象来转换
  * 2.安装OFFICE 支持03以上版本
  * 3.安装PDF转换插件 一般OFFICE安装完整应该自带该功能
- *
+ * <p>
  * 使用准备
  * 1.对应不同位操作系统 需要将以下指定文件放入以下2个目录中
  *
- *@Resource jacob-1.18-x64.dll 64位操作系统
- *@Resource jacob-1.18-x86.dll 32位操作系统
- *
+ * @Resource jacob-1.18-x64.dll 64位操作系统
+ * @Resource jacob-1.18-x86.dll 32位操作系统
  * @PATH jdk\bin  jre\bin
- *
+ * <p>
  * Created by gang.xie on 2017/7/31.
  */
 public class WindowsOfficeConvert2PDF {

@@ -11,22 +11,23 @@ import java.sql.*;
 
 /**
  * 生成DBF文件
+ *
  * @author xth
  */
 public class JavaDbf {
 
-    public static void produceDBF(String sql,String driver,String url,String username,String password,String targetFile){
+    public static void produceDBF(String sql, String driver, String url, String username, String password, String targetFile) {
         Connection connection = null;
         Statement smt = null;
         try {
             Class.forName(driver);
             DriverManager.setLoginTimeout(100);
-            connection = DriverManager.getConnection(url, username,password);
+            connection = DriverManager.getConnection(url, username, password);
             connection.setAutoCommit(false);
             smt = connection.createStatement();
             ResultSet rs = smt.executeQuery(sql);
             connection.commit();
-            toFile(rs,targetFile);
+            toFile(rs, targetFile);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -52,7 +53,7 @@ public class JavaDbf {
 
         int fieldCount = columnCount;
 
-        System.out.println("fieldCount:"+fieldCount);
+        System.out.println("fieldCount:" + fieldCount);
 //每一列的标题
 
         DBFField[] fields = new DBFField[fieldCount];
@@ -69,13 +70,13 @@ public class JavaDbf {
 
         }
 
-        File file=new File(outFile);
+        File file = new File(outFile);
         file.delete();
         try {
             file.createNewFile();
         } catch (IOException ex) {
         }
-        writer =new DBFWriter(file);
+        writer = new DBFWriter(file);
 
         writer.setFields(fields);
         writer.setCharactersetName("GBK");
