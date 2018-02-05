@@ -14,7 +14,6 @@ import org.apache.commons.lang.StringUtils;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,77 +107,66 @@ public class NumberUtils {
     /**
      * double保留有效位数
      *
-     * @param value 原值
-     * @param scale 小数位
-     * @return double
+     * @param value  原值
+     * @param scale  小数位
+     * @param isNull 数值为空的时候返回值
+     * @return String
      */
-    public static Double effectivePosition(Double value, Integer scale) {
+    public static String effectivePosition(Double value, Integer scale, String isNull) {
         if (value == null) {
-            return null;
+            return isNull;
         }
+        BigDecimal bigDecimal;
         if (scale < 0) {
-            return value;
+            bigDecimal = new BigDecimal(String.valueOf(value));
+            return removeZero(bigDecimal.toPlainString());
         }
         double d = value;
         int v = (int) d;
-        if (scale == 0) {
-            return (double) v;
+        if (v == d) {
+            bigDecimal = new BigDecimal(String.valueOf(value));
+            return removeZero(bigDecimal.toPlainString());
         }
-//        BigDecimal b = new BigDecimal(String.valueOf(d - v));
-//        BigDecimal divisor = BigDecimal.ONE;
-//        MathContext mc = new MathContext(scale);
-//        d = b.divide(divisor, mc).doubleValue();
-//        return v + d;
+        if (scale == 0) {
+            bigDecimal = new BigDecimal(String.valueOf(v));
+            return removeZero(bigDecimal.toPlainString());
+        }
         if (value < 0) {
-            value = -significand(-value, scale);
+            return "-" + significand(-value, scale);
         } else {
-            value = significand(value, scale);
+            return significand(value, scale);
+        }
+    }
+
+    private static String significand(Double value, int scale) {
+        double d = value;
+        int v = (int) d;
+        BigDecimal b = new BigDecimal(String.valueOf(value - v), new MathContext(scale, RoundingMode.HALF_DOWN));
+        String str = removeZero(b.toPlainString());
+        return v + str.replace("0.", ".");
+    }
+
+
+    private static String removeZero(String value) {
+        if (value.indexOf(".") > 0) {
+            value = value.replaceAll("0+?$", "");//去掉后面无用的零
+            value = value.replaceAll("[.]$", "");//如小数点后面全是零则去掉小数点
         }
         return value;
     }
 
-    public static Double significand(Double value, int scale) {
-        if (value == null) {
-            return null;
-        }
-        if (scale < 0) {
-            return value;
-        }
-        double d = value;
-        int v = (int) d;
-        if (scale == 0) {
-            return (double) v;
-        }
-        RoundingMode rMode;
-        if (value > 0) {
-            d = d - v;
-            rMode = RoundingMode.HALF_DOWN;
-        } else {
-            d = v - d;
-            rMode = RoundingMode.HALF_UP;
-        }
-        BigDecimal b = new BigDecimal(Double.toString(d), new MathContext(scale, rMode));
-        DecimalFormat decimalFormat = new DecimalFormat("#,##0.00000000");
-        double b1 = b.doubleValue();
-        if (b1 < 1) {
-            String str = String.valueOf(decimalFormat.format(b1)).replace("0.", v + ".");
-            return Double.parseDouble(str);
-        }
-        return v + b1;
-    }
-
     public static void main(String[] args) {
-        List<Integer> ids = new ArrayList();
+        List<Integer> ids = new ArrayList<>();
         splitStrToList("23,2,2323,4343,", ",", ids);
         System.out.println("~~~~~~~~~~~~~~size:" + ids.size());
         for (int id : ids) {
             System.out.println("~~~~~~~~~~~~~~~~~~:" + id);
         }
-        ids = new ArrayList();
+        ids = new ArrayList<>();
         splitStrToList("23,2,2323,4343,", "", ids);
         System.out.println("~~~~~~~~~~~~~~size:" + ids.size());
 
-        ids = new ArrayList();
+        ids = new ArrayList<>();
         splitStrToList("23234", "", ids);
         System.out.println("~~~~~~~~~~~~~~size:" + ids.size());
     }
