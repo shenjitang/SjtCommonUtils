@@ -18,9 +18,7 @@ public class DateUtils {
 
         protected Map<String, DateFormat> initialValue() {
             return new HashMap<String, DateFormat>();
-        }
-
-        ;
+        };
     };
     /**
      * yyyy-MM-dd HH:mm:ss
