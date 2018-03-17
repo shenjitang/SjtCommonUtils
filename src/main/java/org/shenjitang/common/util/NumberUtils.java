@@ -144,6 +144,9 @@ public class NumberUtils {
         int v = (int) d;
         BigDecimal b = new BigDecimal(String.valueOf(value - v), new MathContext(scale, RoundingMode.HALF_DOWN));
         String str = removeZero(b.toPlainString());
+        if (str.equalsIgnoreCase("1")) {
+            return (v + 1) + "";
+        }
         return v + str.replace("0.", ".");
     }
 
