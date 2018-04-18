@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * @author xiaolie
@@ -150,13 +149,53 @@ public class NumberUtils {
         return v + str.replace("0.", ".");
     }
 
-
     private static String removeZero(String value) {
         if (value.indexOf(".") > 0) {
-            value = value.replaceAll("0+?$", "");//去掉后面无用的零
-            value = value.replaceAll("[.]$", "");//如小数点后面全是零则去掉小数点
+            value = value.replaceAll("0+?$", "").replaceAll("[.]$", "");//1.去掉后面无用的零 2.如小数点后面全是零则去掉小数点
         }
         return value;
+    }
+
+    /**
+     * double保留有效位数
+     *
+     * @param value  原值
+     * @param scale  小数位
+     * @param isNull 数值为空的时候返回值
+     * @return String
+     */
+    public static String validPosition(Double value, Integer scale, String isNull) {
+        if (value == null || value.isInfinite() || value.isNaN()) {
+            return isNull;
+        }
+
+        String prefix = "";
+        if (value < 0) {
+            prefix = "-";
+            value = -value;
+        }
+
+        BigDecimal bigDecimal = BigDecimal.valueOf(value);
+        String[] valueArr = bigDecimal.toPlainString().split("\\.");
+        if (Double.parseDouble(valueArr[1]) == 0) {
+            return prefix + valueArr[0];
+        }
+
+        if (scale == 0) {
+            BigDecimal decimal = new BigDecimal(("0." + valueArr[1]), new MathContext(1, RoundingMode.HALF_DOWN));
+            String str = removeZero(decimal.toPlainString());
+            if (str.equalsIgnoreCase("1")) {
+                return new BigDecimal((prefix + (Double.parseDouble(valueArr[0]) + 1))).toPlainString().split("\\.")[0];
+            }
+            return prefix + valueArr[0];
+        }
+
+        BigDecimal decimal = new BigDecimal(("0." + valueArr[1]), new MathContext(scale, RoundingMode.HALF_DOWN));
+        String str = removeZero(decimal.toPlainString());
+        if (str.equalsIgnoreCase("1")) {
+            return new BigDecimal((prefix + (Double.parseDouble(valueArr[0]) + 1))).toPlainString().split("\\.")[0];
+        }
+        return prefix + valueArr[0] + str.replace("0.", ".");
     }
 
     public static void main(String[] args) {
