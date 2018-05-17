@@ -163,9 +163,9 @@ public class IpUtil {
          * @param content        请求的参数 格式为：name=xxx&pwd=xxx
          * @param encodingString 服务器端请求编码。如GBK,UTF-8等
          */
-        public static String getAddresses(String content, String encodingString) {
+        public static String getAddresses(String content, String encodingString, Integer timeOut) {
             // 从http://whois.pconline.com.cn取得IP所在的省市区信息
-            String returnStr = getResult(addressesApi, content, encodingString);
+            String returnStr = getResult(addressesApi, content, encodingString, timeOut);
             if (returnStr != null) {
                 // 处理返回的省市区信息
 //                System.out.println("(1) unicode转换成中文前的returnStr : " + returnStr);
@@ -186,13 +186,13 @@ public class IpUtil {
          * @param encoding 服务器端请求编码。如GBK,UTF-8等
          * @return
          */
-        private static String getResult(String urlStr, String content, String encoding) {
+        private static String getResult(String urlStr, String content, String encoding, Integer timeOut) {
             URL url = null;
             HttpURLConnection connection = null;
             try {
                 url = new URL(urlStr);
                 connection = (HttpURLConnection) url.openConnection();// 新建连接实例
-                connection.setConnectTimeout(2000);// 设置连接超时时间，单位毫秒
+                connection.setConnectTimeout(timeOut);// 设置连接超时时间，单位毫秒
                 connection.setReadTimeout(2000);// 设置读取数据超时时间，单位毫秒
                 connection.setDoOutput(true);// 是否打开输出流 true|false
                 connection.setDoInput(true);// 是否打开输入流true|false
@@ -302,7 +302,7 @@ public class IpUtil {
             AddressUtils addressUtils = new AddressUtils();
             // 测试ip 219.136.134.157 中国=华南=广东省=广州市=越秀区=电信
             String ip = "122.49.20.247";
-            String address = getAddresses("ip=" + ip, "utf-8");
+            String address = getAddresses("ip=" + ip, "utf-8", 2000);
             System.out.println(address);
             // 输出结果为：广东省,广州市,越秀区
             try {
