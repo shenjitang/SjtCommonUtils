@@ -7,7 +7,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.shenjitang.common.Destroynable;
 import org.shenjitang.common.util.StringUtilEx;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +19,7 @@ import java.util.*;
  * Time: 下午3:11
  */
 
-public class FileUpload implements Destroynable {
+public class FileUpload {
     private Map<String, String> params = new HashMap<String, String>();
 
     private List<File> files = new ArrayList<File>();
@@ -163,16 +162,6 @@ public class FileUpload implements Destroynable {
 
     public List<File> getUploadFiles() {
         return files;
-    }
-
-    /**
-     * 删除使用的临时文件夹和上载的临时文件
-     */
-    @Override
-    public void destroy() {
-        for (File file : needDelete) {
-            FileUtils.deleteQuietly(file);
-        }
     }
 
 }

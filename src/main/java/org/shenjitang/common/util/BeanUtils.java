@@ -1,6 +1,5 @@
 package org.shenjitang.common.util;
 
-import org.shenjitang.common.constant.Constants;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -109,7 +108,7 @@ public class BeanUtils {
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         for (PropertyDescriptor descriptor : propertyDescriptors) {
             String propertyName = descriptor.getName();
-            if (!propertyName.equals(Constants.CLASS)) {
+            if (!propertyName.equals("class")) {
                 Method readMethod = descriptor.getReadMethod();
                 map.put(propertyName, readMethod.invoke(bean));
             }
