@@ -345,4 +345,25 @@ public class StringUtilEx {
     public static boolean isEmail(String name) {
         return Pattern.matches(IS_REGEX_EMAIL, name);
     }
+    
+    /**
+     * 极高效简单模版引擎，变量按顺序替换。
+     * @param templete
+     * @param placeholder
+     * @param args
+     * @return 
+     */
+    public static String simpleTempleEval(String templete, char placeholder, Object ... args) {
+        int argIndex = 0;
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < templete.length(); i++) {
+            char c = templete.charAt(i);
+            if (c == placeholder) {
+                sb.append(args[argIndex++]);
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

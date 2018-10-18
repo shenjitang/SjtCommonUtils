@@ -1,6 +1,8 @@
 package org.shenjitang.common.util;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class MD5 {
     private final static String[] hexDigits = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
@@ -12,7 +14,7 @@ public class MD5 {
      * @return 16 返回的字符串
      */
     public static String byteArrayToHexString(byte[] b) {
-        StringBuilder resultSb = new StringBuilder();
+        StringBuilder resultSb = new StringBuilder(32);
         for (byte aB : b) {
             resultSb.append(byteToHexString(aB));
         }
@@ -29,17 +31,21 @@ public class MD5 {
     }
 
     public static String MD5Encode(String origin) {
-        String resultString = null;
         try {
-            resultString = origin;
             MessageDigest md = MessageDigest.getInstance("MD5");
-            resultString = byteArrayToHexString(md.digest(resultString.getBytes()));
-        } catch (Exception ignored) {
+            return byteArrayToHexString(md.digest(origin.getBytes("utf8")));
+        } catch (Exception e1) {
+            e1.printStackTrace();
         }
-        return resultString;
+        return null;
+    }
+
+    public static String MD5Encode(String origin, String charset) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        return byteArrayToHexString(md.digest(origin.getBytes(charset)));
     }
 
     public static void main(String[] args) {
-        System.err.println(MD5Encode("a"));
+        System.out.println(MD5Encode("你好啊大大的！！！"));
     }
 }
