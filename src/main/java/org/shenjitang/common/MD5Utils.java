@@ -1,8 +1,5 @@
 package org.shenjitang.common;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -10,6 +7,7 @@ import javax.crypto.spec.DESKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import org.apache.commons.codec.binary.Base64;
 
 public class MD5Utils {
 
@@ -22,7 +20,7 @@ public class MD5Utils {
      */
     public static String encrypt(String data, String key) throws Exception {
         byte[] bt = encrypt(data.getBytes(), key.getBytes());
-        return new BASE64Encoder().encode(bt);
+        return Base64.encodeBase64String(bt);
     }
 
     /**
@@ -34,8 +32,7 @@ public class MD5Utils {
         if (data == null) {
             return null;
         }
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] buf = decoder.decodeBuffer(data);
+        byte[] buf = Base64.decodeBase64(data);
         byte[] bt = decrypt(buf, key.getBytes());
         return new String(bt);
     }
