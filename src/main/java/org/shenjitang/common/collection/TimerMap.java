@@ -6,10 +6,12 @@
 package org.shenjitang.common.collection;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -17,26 +19,25 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author xiaolie33
  */
-public class TimerMap<T> implements Runnable {
+public class TimerMap<K, T> implements Runnable, Map<K, T> {
     private static final Log logger = LogFactory.getLog(TimerMap.class);
     private long interval = 5000L; //检查周期
-    private Map<T, Item> map = new HashMap(); //集合
-    private Thread th;
+    private final Map<K, Item> map = new HashMap(); //集合
+    private final Thread th;
+    private final RejectListener<K, T> rejectlistener;
+    private final Long lifetime;
     
 
-    public TimerMap() {
+    public TimerMap(RejectListener<K, T> rejectlistener, Long lifetime) {
+        this.rejectlistener = rejectlistener;
+        this.lifetime = lifetime;
+        this.th = new Thread(this, "TimerMap-check");
     }
     
     public void start() {
-        th = new Thread(this, "TimerMap-check");
         th.start();
     }
     
-    public synchronized void add(T obj, long lifetime, RejectListener<T> rejectlistener)  {
-        Item item = new Item(obj, lifetime, rejectlistener);
-        map.put(obj, item);
-    }
-
     public long getInterval() {
         return interval;
     }
@@ -50,21 +51,24 @@ public class TimerMap<T> implements Runnable {
         while(true) {
             try {
                 Thread.sleep(interval);
-                List<Item> matchList = new ArrayList();
+                List<Map.Entry<K, Item>> matchList = new ArrayList();
                 synchronized(this) {
-                    Iterator<Map.Entry<T, Item>> it = map.entrySet().iterator(); 
+                    Iterator<Map.Entry<K, Item>> it = map.entrySet().iterator(); 
                     while(it.hasNext()) { 
-                        Map.Entry<T, Item> entry= it.next();
+                        Map.Entry<K, Item> entry= it.next();
                         Item item= entry.getValue();
-                        if (System.currentTimeMillis() - item.inTime > item.lifetime) {
-                            matchList.add(item);
+                        if (System.currentTimeMillis() - item.inTime > lifetime) {
+                            matchList.add(entry);
                             it.remove();
                         }
                     }
                 }
-                for (Item item : matchList) {
+                for (Map.Entry<K, Item> entry : matchList) {
+                    Item item = entry.getValue();
                     try {
-                        item.listener.reject(item.obj, item.lifetime);
+                        if (rejectlistener != null) {
+                            rejectlistener.reject(entry.getKey(), item.obj);
+                        }
                     } catch (Exception e) {
                         logger.warn("", e);
                     }
@@ -74,36 +78,127 @@ public class TimerMap<T> implements Runnable {
             }
         }
     }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object arg0) {
+        return map.containsKey(arg0);
+    }
+
+    @Override
+    public boolean containsValue(Object arg0) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        /*
+        Iterator<Map.Entry<K, Item>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<K, Item> entry = it.next();
+            Item item = entry.getValue();
+            if (item.obj.equals(arg0)) {
+                return true;
+            }
+        }
+        return false;
+        */
+    }
+
+
+
+    @Override
+    public synchronized Object put(Object arg0, Object arg1) {
+        Item item = new Item((T)arg1);
+        map.put((K)arg0, item);
+        return arg1;
+    }
+
+
+    @Override
+    public void putAll(Map arg0) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void clear() {
+        map.clear();
+    }
+
+    @Override
+    public Set keySet() {
+        return map.keySet();
+    }
+
+    @Override
+    public Collection values() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Set entrySet() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public T get(Object arg0) {
+        Item item = map.get(arg0);
+        if (item != null) {
+            return map.get(arg0).obj;
+        }
+        return null;
+    }
+
+    @Override
+    public T remove(Object arg0) {
+        return map.remove(arg0).obj;
+    }
     
-    public interface RejectListener<T> {
-        T reject(T obj, long lifetime);
+    public interface RejectListener<K, T> {
+        T reject(K key, T obj);
     }
     
     public class Item {
         public T obj;
         public long inTime = System.currentTimeMillis();
-        public long lifetime;
-        public RejectListener listener;
 
-        public Item(T obj, long lifetime, RejectListener listener) {
+        public Item(T obj) {
             this.obj = obj;
-            this.lifetime = lifetime;
-            this.listener = listener;
         }
     }
     
-    public static void main(String[] args) {
-        TimerMap<String> tList = new TimerMap();
-        tList.setInterval(1000L);
-        tList.start();
-        tList.add("3", 1000, TimerList::reject);
-        tList.add("1", 2000, TimerList::reject);
-        tList.add("2", 3000, TimerList::reject);
-        tList.add("3", 4000, TimerList::reject);
+    public static void main(String[] args) throws InterruptedException {
+        TimerMap<String, String> tMap = new TimerMap(TimerMap::reject, 3000L);
+        tMap.setInterval(1000L);
+        tMap.start();
+        tMap.put("3", "three");
+        Thread.sleep(1000l);
+        tMap.put("1", "one");
+        Thread.sleep(1000l);
+        tMap.put("2", "two");
+        Thread.sleep(1000l);
+        tMap.put("3", "three");
+        Thread.sleep(1000l);
+        System.out.println("===" + tMap.get("1"));
+        System.out.println("===" + tMap.get("2"));
+        System.out.println("===" + tMap.get("3"));
+        Thread.sleep(1000l);
+        System.out.println("===" + tMap.get("1"));
+        System.out.println("===" + tMap.get("2"));
+        System.out.println("===" + tMap.get("3"));
+        Thread.sleep(1000l);
+        System.out.println("===" + tMap.get("1"));
+        System.out.println("===" + tMap.get("2"));
+        System.out.println("===" + tMap.get("3"));
     }
     
-    public static String reject(String str, long lifetime) {
-        System.out.println(str + " is registed . lifetime:" + lifetime);
+    public static Object reject(Object key, Object str) {
+        System.out.println(key + ":" + str + " is registed .");
         return str;
     }    
 }
